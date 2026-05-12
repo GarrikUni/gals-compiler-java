@@ -1,0 +1,70 @@
+inicio
+int soma(int a, int b) {
+    return a + b;
+}
+
+// Procedimento (não retorna valor)
+void imprimeVetor(int *v, int tamanho) {
+    for (int i = 0; i < tamanho; i++) {
+        cout("%d ", v[i]);
+    }
+    cout("\n");
+}
+
+int main() {
+    // Declaração múltipla de variáveis e vetores
+    int a, b, c = 0, i, tamanho = 5;
+    int v[5], w[5];
+
+    // Entrada de dados (variáveis e vetor)
+    cout("Digite dois numeros:\n");
+    cin(a);
+    cin(b);
+
+    cout("Digite 5 valores para o vetor:\n");
+    for (i = 0; i < tamanho; i++) {
+        cin(v[i]);
+    }
+
+    // Atribuição com expressão e chamada de função
+    c = soma(a, b) + v[0] * 2;
+
+    // Desvio condicional simples
+    if (c > 10) then {
+        cout("C eh maior que 10\n");
+    }
+
+    // Desvio condicional composto
+    if (a > b)  then{
+        cout("A eh maior que B\n");
+    } else {
+        cout("B eh maior ou igual a A\n");
+    }
+
+    // Laço pré-testado (while)
+    i = 0;
+    while (i < tamanho) {
+        w[i] = v[i] + 1;
+        i++;
+    }
+
+    // Laço pré-testado com controle (for)
+    for (i = 0; i < tamanho; i++) {
+        v[i] = v[i] * 2;
+    }
+
+    // Laço pós-testado (do-while)
+    i = 0;
+    do {
+        cout("Elemento w[%d] = %d\n", i, w[i]);
+        i++;
+    } while (i < tamanho);
+
+    // Saída de dados com variáveis, vetor e literal
+    cout("Resultado c = %d\n", c);
+    cout("Vetor v: ");
+    imprimeVetor(v, tamanho);
+
+    return 0;
+}
+fim

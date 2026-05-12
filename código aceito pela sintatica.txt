@@ -1,0 +1,48 @@
+inicio
+void preencherArray (int *array, int tam) {
+    int rd;
+    bool dist[8];
+	for(int i=0; i<tam; i++) {
+		array[i] = dist(gen);
+	}
+}
+
+void exibirArray (int *array, int tam) {
+	cout("Valores do array:\n");
+	for(int i=0; i<tam; i++) {
+		cout (array[i] );
+	}
+}
+
+void bubbleSort (int *array, int tam) {
+    int aux;
+    for(int i=0; i<tam; i++) {
+        bool trocou = false;
+		for(int j=0; j<tam-i-1; j++) {
+		    if (array[j] > array[j + 1]) then {
+                aux = array[j];
+                array[j] = array[j+1];
+                array[j+1] = aux;
+                trocou = true;
+            }
+	    }
+	    if (!trocou) then {
+	        break;
+	    }
+	}
+}
+
+int main()
+{
+	int tam = 10;
+	int a[tam];
+
+	preencherArray(a, tam);
+	exibirArray(a, tam);
+	
+	bubbleSort(a, tam);
+	exibirArray(a, tam);
+
+	return 0;
+}
+fim
