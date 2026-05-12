@@ -1,0 +1,197 @@
+#Options
+GenerateScanner = true
+GenerateParser = true
+Language = Java
+ScannerName = Lexico
+ParserName = Sintatico
+SemanticName = Semantico
+ScannerCaseSensitive = true
+ScannerTable = Compact
+Input = String
+Parser = SLR
+#RegularDefinitions
+
+#Tokens
+:[\n\s\t\r]+
+
+INT: "int"|"integer"
+ID: [a-zA-Z][a-zA-Z0-9_]*
+
+inicio = ID : "inicio"
+fim = ID : "fim"
+repeat = ID : "repeat"
+
+VOID = ID : "void"
+FLOAT = ID : "float"
+CHAR = ID : "char"
+STRING = ID : "string"
+BOOL = ID : "bool"
+
+IF = ID : "if"
+THEN = ID : "then"
+ELSE = ID : "else"
+
+END = ID : "end"
+
+FOR = ID : "for"
+DO = ID : "do"
+WHILE = ID : "while"
+BREAK = ID : "break"
+CONTINUE = ID : "continue"
+
+FUNCTION = ID : "function"
+RETURN = ID : "return"
+
+CIN = ID : "cin"
+COUT = ID : "cout"
+
+REAL: [0-9]+"."[0-9]+
+HEXNUM: "0x"[0-9a-fA-F]+|"0X"[0-9a-fA-F]+
+BINNUM: "0b"[0-1]+|"0B"[0-1]+
+NUM: [0-9]+
+
+STRINGval: [\"] [^\"]* [\"] 
+CHARval: ['] [^']? [']|"'\''" //só aceita ' como char se for escapado \'
+
+//LINE_C: [/][/][^ \n]*
+//BLOCK_C: "/*" ( [^\*]|[\*][^/] )* [\*]? "*/"
+:! [/][/][^ \n]*
+:! "/*" ( [^\*]|[\*][^/] )* [\*]? "*/"
+
+">>"
+"<<"
+">="
+"<="
+"=="
+"!="
+"&&"
+"||"
+"++"
+"--"
+"+"
+"-"
+"*"
+"/"
+"%"
+">"
+"<"
+"!"
+"&"
+"|"
+"~"
+"^"
+"="
+"."
+";"
+":"
+","
+"("
+")"
+"{"
+"}"
+"["
+"]"
+#NonTerminals
+<prog>
+<block>
+<l_decl>
+<l_cmd>
+<cmd>
+<simple_cmd>
+<l_func>
+<func>
+<params>
+<param>
+<ret>
+<type>
+<base_type>
+<ptr>
+<decl>
+<decl_list>
+<decl_item>
+<decl_nosemi>
+<attr>
+<attr_nosemi>
+<expr>
+<logic_or>
+<logic_and>
+<logic_not>
+<rel>
+<rel_op>
+<arith>
+<term>
+<factor>
+<call>
+<args>
+<cond>
+<rep>
+<for_init>
+<for_cond>
+<for_update>
+<brk>
+<cont>
+<read>
+<read_list>
+<read_item>
+<write>
+<write_list>
+<write_item>
+// <cmd2>
+#Grammar
+<prog>  ::= inicio <l_decl> <l_func> fim | inicio <l_func> fim; // î representa epsilon em gals
+<block> ::= "{" #4 <l_cmd> "}" #5; // #1 tipo da declaração, #2 guarda identificador, #3 verifica identificador, #4 entra em escopo, #5 sai de escopo, #6 varifica teipo de atribuição
+
+<l_decl> ::= <l_decl> <decl> | <decl>;
+
+<l_cmd> ::= <l_cmd> <cmd> | <cmd> ;
+<cmd>  ::= <simple_cmd> | <cond> | <rep> | <block> | <ret> | <brk> | <cont> | ";";
+<simple_cmd> ::= <attr> | <call> ";"| <decl> | <read> | <write> ;
+
+<l_func> ::= <l_func> <func> | <func>  ;
+<func> ::= <type> ID "(" <params> ")" <block> | <type> ID "(" ")" <block>;
+<params> ::= <params> "," <param> | <param> ;
+<param> ::= <type> ID #2;
+<ret> ::= RETURN <expr> ";";
+
+<type> ::= <base_type> <ptr>;
+<base_type> ::= INT #1 | FLOAT #1 | CHAR #1 | STRING #1 | BOOL #1 | VOID  #1;
+<ptr> ::= "*" <ptr> | î;
+<decl> ::= <type> <decl_list> ";";
+<decl_list> ::= <decl_item> | <decl_list> "," <decl_item>;
+<decl_item> ::= ID #2 | ID #2 "=" <expr> #6 | ID #2 "[" NUM "]" | ID #2 "[" ID #3 "]";
+<decl_nosemi> ::= <type> <decl_list>;
+
+<attr> ::= <attr_nosemi> ";" ;
+<attr_nosemi> ::= ID #3 "=" <expr> #6| ID #3 "[" <expr> "]" "=" <expr> #6 | ID #3 "++" | ID #3 "--" | "++" ID #3 | "--" ID #3;
+
+<expr> ::= <logic_or>;
+<logic_or> ::= <logic_or> "||" <logic_and> | <logic_and>;
+<logic_and> ::= <logic_and> "&&" <logic_not> | <logic_not>;
+<logic_not> ::= "!" <logic_not> | <rel>;
+<rel> ::= <arith> <rel_op> <arith> | <arith>;
+<rel_op> ::= "==" | "!=" | "<" | ">" | "<=" | ">=";
+<arith> ::= <arith> "+" <term> | <arith> "-" <term> | <term>;
+<term> ::= <term> "*" <factor> | <term> "/" <factor> | <term> "%" <factor> | <factor>;
+<factor> ::= "++" ID #3 | "--" ID #3 | ID #3 "++" | ID #3 "--" | "(" <expr> ")" | <call> | ID #3 "[" <expr> "]" | ID #3 | NUM | REAL | STRINGval | CHARval;
+
+<call> ::= ID "(" <args> ")" | ID "(" ")"; //chamada de funcao
+<args> ::= <args> "," <expr> | <expr>;
+
+<cond> ::= IF "(" <expr> ")" THEN <block> ELSE <block> | IF "(" <expr> ")" THEN <block>;
+<rep> ::= WHILE "(" <expr> ")" <cmd> | FOR "(" <for_init> ";" <for_cond> ";" <for_update> ")" <cmd> | DO <cmd> WHILE "(" <expr> ")" ";";
+<for_init> ::= <decl_nosemi> | <attr_nosemi> ;
+<for_cond> ::= <expr> ;
+<for_update> ::= <attr_nosemi> ;
+
+<brk> ::= BREAK ";";
+<cont> ::= CONTINUE ";";
+
+<read> ::= CIN "(" <read_list> ")" ";";
+<read_list> ::= <read_item> | <read_list> "," <read_item>;
+<read_item> ::= ID #3 | ID #3 "[" <expr> "]";
+<write> ::= COUT "(" <write_list> ")" ";";
+<write_list> ::= <write_item> | <write_list> "," <write_item>;
+<write_item> ::= <expr>;
+
+
+// <cmd2>   ::= IF | THEN | ELSE | END | INT | FLOAT | FOR | FUNCTION | ID | REAL | HEXNUM | BINNUM | NUM | STRING | CHAR | LINE_COMMENT | BLOCK_COMMENT |            ">>"|"<<"|">="|"<="|"=="|"!="|"&&"|"||"|"++"|"--"|"+"|"-"|"*"|"/"|"%"|">"|"<"|"!"|"&"|"|"|"~"|"^"|"="|"."|";"|":"|","|"("|")"|"{"|"}"|"["|"]";
