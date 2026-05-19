@@ -141,6 +141,9 @@ public class Semantico implements Constants
 
     private Simbolo lhsAtual;
 
+    private Simbolo acessoAtual;
+    private int quantidadeIndices;
+
     public void executeAction(int action, Token token) throws SemanticError
     {
         switch(action)
@@ -193,8 +196,42 @@ public class Semantico implements Constants
                 break;
 
             case 12:
+                // Simbolo s = verificarIdentificador(token);
+                // pilhaTipos.push(s.tipo);
+                // break;
                 Simbolo s = verificarIdentificador(token);
+                if(s.vet || s.matriz) {
+                    throw new SemanticError(
+                        "Uso inválido de vetor/matriz sem índice: " +
+                        s.id,
+                        token.getPosition()
+                    );
+                }
                 pilhaTipos.push(s.tipo);
+                break;
+
+            case 14:
+                pilhaOps.push("==");
+                break;
+
+            case 15:
+                pilhaOps.push("!=");
+                break;
+
+            case 16:
+                pilhaOps.push("<");
+                break;
+
+            case 17:
+                pilhaOps.push(">");
+                break;
+
+            case 18:
+                pilhaOps.push("<=");
+                break;
+
+            case 19:
+                pilhaOps.push(">=");
                 break;
 
             case 20:
@@ -215,6 +252,18 @@ public class Semantico implements Constants
 
             case 24:
                 pilhaOps.push("%");
+                break;
+
+            case 25:
+                pilhaOps.push("||");
+                break;
+
+            case 26:
+                pilhaOps.push("&&");
+                break;
+
+            case 27:
+                pilhaOps.push("!");
                 break;
 
             case 30:
@@ -239,6 +288,40 @@ public class Semantico implements Constants
 
             case 50:
                 entrarEscopo();
+                break;
+
+            case 51:
+                inserirFuncao(token);
+                break;
+
+            case 52:
+                verificarFuncao(token);
+                break;
+
+            case 60:
+                marcarVetor();
+                break;
+
+            case 61:
+                marcarMatriz();
+                break;
+
+            case 70:
+                acessoAtual = simboloAtual;
+                quantidadeIndices = 0;
+                break;
+
+            case 71:
+                validarIndice(token);
+                quantidadeIndices++;
+                break;
+
+            case 72:
+                validarAcessoVetor(token);
+                break;
+
+            case 74:
+                validarAcessoMatriz(token);
                 break;
         }
     }
@@ -309,6 +392,145 @@ public class Semantico implements Constants
         );
 
         return s;
+    }
+
+    private Simbolo inserirFuncao(Token token) throws SemanticError
+    {
+        String nome = token.getLexeme();
+
+        for(Simbolo s : tabelaSimbolos)
+        {
+            if(s.id.equals(nome) && s.func)
+            {
+                throw new SemanticError(
+                    "Função já declarada: " + nome,
+                    token.getPosition()
+                );
+            }
+        }
+
+        Simbolo s = new Simbolo(
+            nome,
+            tipoAtual,
+            true,
+            false,
+            "global",
+            false,
+            0,
+            false,
+            false,
+            false,
+            true // É função
+        );
+
+        tabelaSimbolos.add(s);
+
+        System.out.println(
+            "Função declarada: " + nome +
+            " retorno: " + tipoAtual
+        );
+
+        return s;
+    }
+
+    private Simbolo verificarFuncao(Token token) throws SemanticError
+    {
+        String nome = token.getLexeme();
+
+        Simbolo s = buscarSimbolo(nome);
+
+        if(s == null || !s.func)
+        {
+            throw new SemanticError(
+                "Função não declarada: " + nome,
+                token.getPosition()
+            );
+        }
+
+        System.out.println(
+            "Chamada de função válida: " + nome
+        );
+
+        return s;
+    }
+
+    private void marcarVetor() {
+        simboloAtual.vet = true;
+        simboloAtual.matriz = false;
+
+        System.out.println(
+            "Identificador '" +
+            simboloAtual.id +
+            "' marcado como vetor"
+        );
+    }
+
+    private void marcarMatriz() {
+        simboloAtual.matriz = true;
+        simboloAtual.vet = false;
+
+        System.out.println(
+            "Identificador '" +
+            simboloAtual.id +
+            "' marcado como matriz"
+        );
+    }
+
+    private void validarIndice(Token token) throws SemanticError
+    {
+        if(pilhaTipos.isEmpty())
+        {
+            throw new SemanticError(
+                "Índice inválido",
+                token.getPosition()
+            );
+        }
+
+        String tipoIndice = pilhaTipos.pop();
+
+        if(!tipoIndice.equals("int"))
+        {
+            throw new SemanticError(
+                "Índice deve ser int",
+                token.getPosition()
+            );
+        }
+    }
+
+    private void validarAcessoVetor(Token token) throws SemanticError
+    {
+        if(!acessoAtual.vet)
+        {
+            throw new SemanticError(
+                "'" + acessoAtual.id +
+                "' não é vetor",
+                token.getPosition()
+            );
+        }
+
+        pilhaTipos.push(acessoAtual.tipo);
+    }
+
+    private void validarAcessoMatriz(Token token) throws SemanticError
+    {
+        if(!acessoAtual.matriz)
+        {
+            throw new SemanticError(
+                "'" + acessoAtual.id +
+                "' não é matriz",
+                token.getPosition()
+            );
+        }
+
+        if(quantidadeIndices != 2)
+        {
+            throw new SemanticError(
+                "Matriz requer dois índices",
+                token.getPosition()
+            );
+        }
+
+        pilhaTipos.push(acessoAtual.tipo);
     }
 
     // busca símbolo pelo id
@@ -444,22 +666,27 @@ public class Semantico implements Constants
         int i = indice(t1);
         int j = indice(t2);
 
-        switch(op)
-        {
-            case "+":
-                return soma[i][j];
+        switch(op) {
+            // aritméticos
+            case "+": return soma[i][j];
+            case "-": return sub[i][j];
+            case "*": return mult[i][j];
+            case "/": return div[i][j];
+            case "%": return mod[i][j];
 
-            case "-":
-                return sub[i][j];
+            // relacionais
+            case "==":
+            case "!=":
+            case "<":
+            case ">":
+            case "<=":
+            case ">=":
+                return rel[i][j];
 
-            case "*":
-                return mult[i][j];
-
-            case "/":
-                return div[i][j];
-
-            case "%":
-                return mod[i][j];
+            // lógicos
+            case "&&":
+            case "||":
+                return logic[i][j];
 
             default:
                 return ERRO;
@@ -467,6 +694,25 @@ public class Semantico implements Constants
     }
 
     private void reduzir(String op, Token token) throws SemanticError {
+        if(op.equals("!")) {
+
+            if(pilhaTipos.isEmpty()) {
+                throw new SemanticError("Expressão inválida", token.getPosition());
+            }
+
+            String tipo = pilhaTipos.pop();
+
+            if(!tipo.equals("bool")) {
+                throw new SemanticError(
+                    "Operador ! requer bool",
+                    token.getPosition()
+                );
+            }
+
+            pilhaTipos.push("bool");
+            return;
+        }
+
         if (pilhaTipos.size() < 2) {
             throw new SemanticError("Expressão inválida", token.getPosition());
         }
