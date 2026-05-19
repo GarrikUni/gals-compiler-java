@@ -1,10 +1,12 @@
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 
 public class Semantico implements Constants
 {
-    class Simbolo {
+    public static class Simbolo {
         String id;
         String tipo;
         boolean ini;
@@ -18,17 +20,17 @@ public class Semantico implements Constants
         boolean func;
 
         public Simbolo(
-            String id,
-            String tipo,
-            boolean ini,
-            boolean usada,
-            String escopo,
-            boolean param,
-            int pos,
-            boolean vet,
-            boolean matriz,
-            boolean ref,
-            boolean func
+                String id,
+                String tipo,
+                boolean ini,
+                boolean usada,
+                String escopo,
+                boolean param,
+                int pos,
+                boolean vet,
+                boolean matriz,
+                boolean ref,
+                boolean func
         ) {
             this.id = id;
             this.tipo = tipo;
@@ -46,87 +48,70 @@ public class Semantico implements Constants
 
     private static final String ERRO = "erro";
 
-    // private String[][] compatibilidadeOP = {
-    //     // int      float     char      string    bool
-    //     {"+-*/%",  "+-*/%",   ERRO,     ERRO,     ERRO}, // int
-    //     {"+-*/%",  "+-*/%",   ERRO,     ERRO,     ERRO}, // float
-    //     {ERRO,     ERRO,      "+-",     "+-",     ERRO}, // char
-    //     {ERRO,     ERRO,      "+-",     "+-",     ERRO}, // string
-    //     {ERRO,     ERRO,      ERRO,     ERRO,     ERRO}  // bool
-    // };
-
-    // private String[][] compatibilidadeATTR = {
-    //     // int      float     char      string    bool
-    //     {"OK",     "AVISO",   ERRO,     ERRO,     ERRO}, // int
-    //     {ERRO,     "OK",      ERRO,     ERRO,     ERRO}, // float
-    //     {ERRO,     ERRO,      "OK",     ERRO,     ERRO}, // char
-    //     {ERRO,     ERRO,      "AVISO",  "OK",     ERRO}, // string
-    //     {ERRO,     ERRO,      ERRO,     ERRO,     "OK"}  // bool
-    // };
-
     private String[][] soma = {
-    // int      float     char     string    bool
-    {"int",    "float",  ERRO,     ERRO,     ERRO}, // int
-    {"float",  "float",  ERRO,     ERRO,     ERRO}, // float
-    {ERRO,     ERRO,     "string", "string", ERRO}, // char
-    {ERRO,     ERRO,     "string", "string", ERRO}, // string
-    {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}  // bool
+            // int      float     char      string    bool
+            {"int",    "float",  ERRO,     ERRO,     ERRO},
+            {"float",  "float",  ERRO,     ERRO,     ERRO},
+            {ERRO,     ERRO,     "string", "string", ERRO},
+            {ERRO,     ERRO,     "string", "string", ERRO},
+            {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}
     };
+
     private String[][] sub = {
-    // int      float     char     string    bool
-    {"int",    "float",  ERRO,     ERRO,     ERRO}, // int
-    {"float",  "float",  ERRO,     ERRO,     ERRO}, // float
-    {ERRO,     ERRO,     "char",   "char",   ERRO}, // char
-    {ERRO,     ERRO,     "string", "string", ERRO}, // string
-    {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}  // bool
+            // int      float     char      string    bool
+            {"int",    "float",  ERRO,     ERRO,     ERRO},
+            {"float",  "float",  ERRO,     ERRO,     ERRO},
+            {ERRO,     ERRO,     "char",   "char",   ERRO},
+            {ERRO,     ERRO,     "string", "string", ERRO},
+            {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}
     };
+
     private String[][] mult = {
-    // int      float     char     string    bool
-    {"int",    "float",  ERRO,     ERRO,     ERRO}, // int
-    {"float",  "float",  ERRO,     ERRO,     ERRO}, // float
-    {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}, // char
-    {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}, // string
-    {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}  // bool
+            // int      float     char      string    bool
+            {"int",    "float",  ERRO,     ERRO,     ERRO},
+            {"float",  "float",  ERRO,     ERRO,     ERRO},
+            {ERRO,     ERRO,     ERRO,     ERRO,     ERRO},
+            {ERRO,     ERRO,     ERRO,     ERRO,     ERRO},
+            {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}
     };
 
     private String[][] div = {
-    // int      float     char     string    bool
-    {"int",    "float",  ERRO,     ERRO,     ERRO}, // int
-    {"float",  "float",  ERRO,     ERRO,     ERRO}, // float
-    {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}, // char
-    {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}, // string
-    {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}  // bool
+            // int      float     char      string    bool
+            {"int",    "float",  ERRO,     ERRO,     ERRO},
+            {"float",  "float",  ERRO,     ERRO,     ERRO},
+            {ERRO,     ERRO,     ERRO,     ERRO,     ERRO},
+            {ERRO,     ERRO,     ERRO,     ERRO,     ERRO},
+            {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}
     };
 
     private String[][] mod = {
-    // int      float     char     string    bool
-    {"int",    "float",  ERRO,     ERRO,     ERRO}, // int
-    {"float",  "float",  ERRO,     ERRO,     ERRO}, // float
-    {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}, // char
-    {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}, // string
-    {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}  // bool
+            // int      float     char      string    bool
+            {"int",    ERRO,     ERRO,     ERRO,     ERRO},
+            {ERRO,     ERRO,     ERRO,     ERRO,     ERRO},
+            {ERRO,     ERRO,     ERRO,     ERRO,     ERRO},
+            {ERRO,     ERRO,     ERRO,     ERRO,     ERRO},
+            {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}
     };
 
     private String[][] rel = {
-    // int      float     char     string    bool
-    {"bool",     "bool",     ERRO,     ERRO,     ERRO}, // int
-    {"bool",     "bool",     ERRO,     ERRO,     ERRO}, // float
-    {ERRO,     ERRO,     "bool",     "bool",     ERRO}, // char
-    {ERRO,     ERRO,     "bool",     "bool",     ERRO}, // string
-    {ERRO,     ERRO,     ERRO,     ERRO,     "bool"}  // bool
+            // int      float     char      string    bool
+            {"bool",   "bool",   ERRO,     ERRO,     ERRO},
+            {"bool",   "bool",   ERRO,     ERRO,     ERRO},
+            {ERRO,     ERRO,     "bool",   "bool",   ERRO},
+            {ERRO,     ERRO,     "bool",   "bool",   ERRO},
+            {ERRO,     ERRO,     ERRO,     ERRO,     "bool"}
     };
 
     private String[][] logic = {
-    // int      float     char     string    bool
-    {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}, // int
-    {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}, // float
-    {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}, // char
-    {ERRO,     ERRO,     ERRO,     ERRO,     ERRO}, // string
-    {ERRO,     ERRO,     ERRO,     ERRO,     "bool"}  // bool
+            // int      float     char      string    bool
+            {ERRO,     ERRO,     ERRO,     ERRO,     ERRO},
+            {ERRO,     ERRO,     ERRO,     ERRO,     ERRO},
+            {ERRO,     ERRO,     ERRO,     ERRO,     ERRO},
+            {ERRO,     ERRO,     ERRO,     ERRO,     ERRO},
+            {ERRO,     ERRO,     ERRO,     ERRO,     "bool"}
     };
 
     private List<Simbolo> tabelaSimbolos = new ArrayList<>();
-    //private Map<String, String> tabelaSimbolos = new LinkedHashMap<>();
 
     private Stack<String> pilhaEscopos = new Stack<>();
     private int nivelEscopo = 0;
@@ -134,35 +119,37 @@ public class Semantico implements Constants
     private String tipoAtual;
 
     private Stack<String> pilhaTipos = new Stack<>();
-
     private Stack<String> pilhaOps = new Stack<>();
 
     private Simbolo simboloAtual;
-
     private Simbolo lhsAtual;
 
     private Simbolo acessoAtual;
     private int quantidadeIndices;
+
+    private List<String> avisos = new ArrayList<>();
+    private Set<String> avisosEmitidos = new LinkedHashSet<>();
+
+    public Semantico() {
+        pilhaEscopos.push("global");
+    }
 
     public void executeAction(int action, Token token) throws SemanticError
     {
         switch(action)
         {
             case 1:
-                // Guarda o tipo atual: int, float, char, string, bool, void
                 tipoAtual = token.getLexeme();
                 break;
 
             case 2:
-                // Insere identificador na tabela
                 simboloAtual = inserirIdentificador(token);
                 break;
 
             case 3:
-                // Verifica uso de identificador
                 simboloAtual = verificarIdentificador(token);
                 break;
-            
+
             case 4:
                 entrarEscopo();
                 break;
@@ -182,7 +169,7 @@ public class Semantico implements Constants
             case 8:
                 pilhaTipos.push("float");
                 break;
-            
+
             case 9:
                 pilhaTipos.push("string");
                 break;
@@ -196,17 +183,16 @@ public class Semantico implements Constants
                 break;
 
             case 12:
-                // Simbolo s = verificarIdentificador(token);
-                // pilhaTipos.push(s.tipo);
-                // break;
                 Simbolo s = verificarIdentificador(token);
+
                 if(s.vet || s.matriz) {
                     throw new SemanticError(
-                        "Uso inválido de vetor/matriz sem índice: " +
-                        s.id,
-                        token.getPosition()
+                            "Uso inválido de vetor/matriz sem índice: " + s.id,
+                            token.getPosition()
                     );
                 }
+
+                verificarInicializacao(s, token);
                 pilhaTipos.push(s.tipo);
                 break;
 
@@ -272,10 +258,11 @@ public class Semantico implements Constants
 
             case 31:
                 pilhaOps.clear();
+                pilhaTipos.clear();
                 break;
 
             case 32:
-                lhsAtual = verificarIdentificador(token);
+                lhsAtual = buscarIdentificador(token);
                 break;
 
             case 33:
@@ -307,7 +294,7 @@ public class Semantico implements Constants
                 break;
 
             case 70:
-                acessoAtual = simboloAtual;
+                acessoAtual = buscarIdentificador(token);
                 quantidadeIndices = 0;
                 break;
 
@@ -326,46 +313,75 @@ public class Semantico implements Constants
         }
     }
 
-    private void finalizarExpr(Token token) throws SemanticError {
-        while (!pilhaOps.isEmpty()) {
-            String op = pilhaOps.pop();
-            reduzir(op, token);
-        }
-    }
-
     private Simbolo inserirIdentificador(Token token) throws SemanticError
     {
         String nome = token.getLexeme();
 
-        // verifica se já existe
         if(buscarNoEscopoAtual(nome) != null)
         {
             throw new SemanticError(
-                "Identificador já declarado no escopo: " + nome,
-                token.getPosition()
+                    "Identificador já declarado no escopo: " + nome,
+                    token.getPosition()
             );
         }
 
         Simbolo s = new Simbolo(
-            nome,
-            tipoAtual,
-            false,
-            false,
-            pilhaEscopos.peek(),
-            false,
-            0,
-            false,
-            false,
-            false,
-            false
+                nome,
+                tipoAtual,
+                false,
+                false,
+                pilhaEscopos.peek(),
+                false,
+                token.getPosition(),
+                false,
+                false,
+                false,
+                false
         );
 
         tabelaSimbolos.add(s);
 
         System.out.println(
-            "Inserido: " + nome +
-            " tipo: " + tipoAtual +
-            " escopo: " + s.escopo
+                "Inserido: " + nome +
+                " tipo: " + tipoAtual +
+                " escopo: " + s.escopo
+        );
+
+        return s;
+    }
+
+    private Simbolo inserirParametro(Token token) throws SemanticError
+    {
+        String nome = token.getLexeme();
+
+        if(buscarNoEscopoAtual(nome) != null)
+        {
+            throw new SemanticError(
+                    "Parâmetro já declarado: " + nome,
+                    token.getPosition()
+            );
+        }
+
+        Simbolo s = new Simbolo(
+                nome,
+                tipoAtual,
+                true,
+                false,
+                pilhaEscopos.peek(),
+                true,
+                token.getPosition(),
+                false,
+                false,
+                false,
+                false
+        );
+
+        tabelaSimbolos.add(s);
+
+        System.out.println(
+                "Parâmetro inserido: " + nome +
+                " tipo: " + tipoAtual +
+                " escopo: " + s.escopo
         );
 
         return s;
@@ -373,23 +389,31 @@ public class Semantico implements Constants
 
     private Simbolo verificarIdentificador(Token token) throws SemanticError
     {
+        Simbolo s = buscarIdentificador(token);
+
+        s.usada = true;
+
+        System.out.println(
+                "Uso de identificador: " + s.id +
+                " tipo: " + s.tipo
+        );
+
+        return s;
+    }
+
+    private Simbolo buscarIdentificador(Token token) throws SemanticError
+    {
         String nome = token.getLexeme();
+
         Simbolo s = buscarSimbolo(nome);
 
         if(s == null)
         {
             throw new SemanticError(
-                "Identificador não declarado: " + nome,
-                token.getPosition()
+                    "Identificador não declarado: " + nome,
+                    token.getPosition()
             );
         }
-
-        s.usada = true;
-
-        System.out.println(
-            "Uso de identificador: " + nome +
-            " tipo: " + s.tipo
-        );
 
         return s;
     }
@@ -403,31 +427,31 @@ public class Semantico implements Constants
             if(s.id.equals(nome) && s.func)
             {
                 throw new SemanticError(
-                    "Função já declarada: " + nome,
-                    token.getPosition()
+                        "Função já declarada: " + nome,
+                        token.getPosition()
                 );
             }
         }
 
         Simbolo s = new Simbolo(
-            nome,
-            tipoAtual,
-            true,
-            false,
-            "global",
-            false,
-            0,
-            false,
-            false,
-            false,
-            true // É função
+                nome,
+                tipoAtual,
+                true,
+                false,
+                "global",
+                false,
+                token.getPosition(),
+                false,
+                false,
+                false,
+                true
         );
 
         tabelaSimbolos.add(s);
 
         System.out.println(
-            "Função declarada: " + nome +
-            " retorno: " + tipoAtual
+                "Função declarada: " + nome +
+                " retorno: " + tipoAtual
         );
 
         return s;
@@ -442,38 +466,48 @@ public class Semantico implements Constants
         if(s == null || !s.func)
         {
             throw new SemanticError(
-                "Função não declarada: " + nome,
-                token.getPosition()
+                    "Função não declarada: " + nome,
+                    token.getPosition()
             );
         }
 
+        s.usada = true;
+
         System.out.println(
-            "Chamada de função válida: " + nome
+                "Chamada de função válida: " + nome
         );
 
         return s;
     }
 
-    private void marcarVetor() {
-        simboloAtual.vet = true;
-        simboloAtual.matriz = false;
+    private void marcarVetor()
+    {
+        if(simboloAtual != null)
+        {
+            simboloAtual.vet = true;
+            simboloAtual.matriz = false;
 
-        System.out.println(
-            "Identificador '" +
-            simboloAtual.id +
-            "' marcado como vetor"
-        );
+            System.out.println(
+                    "Identificador '" +
+                            simboloAtual.id +
+                            "' marcado como vetor"
+            );
+        }
     }
 
-    private void marcarMatriz() {
-        simboloAtual.matriz = true;
-        simboloAtual.vet = false;
+    private void marcarMatriz()
+    {
+        if(simboloAtual != null)
+        {
+            simboloAtual.matriz = true;
+            simboloAtual.vet = false;
 
-        System.out.println(
-            "Identificador '" +
-            simboloAtual.id +
-            "' marcado como matriz"
-        );
+            System.out.println(
+                    "Identificador '" +
+                            simboloAtual.id +
+                            "' marcado como matriz"
+            );
+        }
     }
 
     private void validarIndice(Token token) throws SemanticError
@@ -481,8 +515,8 @@ public class Semantico implements Constants
         if(pilhaTipos.isEmpty())
         {
             throw new SemanticError(
-                "Índice inválido",
-                token.getPosition()
+                    "Índice inválido",
+                    token.getPosition()
             );
         }
 
@@ -491,59 +525,73 @@ public class Semantico implements Constants
         if(!tipoIndice.equals("int"))
         {
             throw new SemanticError(
-                "Índice deve ser int",
-                token.getPosition()
+                    "Índice deve ser int",
+                    token.getPosition()
             );
         }
     }
 
     private void validarAcessoVetor(Token token) throws SemanticError
     {
-        if(!acessoAtual.vet)
+        if(acessoAtual == null)
         {
             throw new SemanticError(
-                "'" + acessoAtual.id +
-                "' não é vetor",
-                token.getPosition()
+                    "Acesso inválido de vetor",
+                    token.getPosition()
             );
         }
 
+        if(!acessoAtual.vet)
+        {
+            throw new SemanticError(
+                    "'" + acessoAtual.id + "' não é vetor",
+                    token.getPosition()
+            );
+        }
+
+        acessoAtual.usada = true;
+        verificarInicializacao(acessoAtual, token);
         pilhaTipos.push(acessoAtual.tipo);
     }
 
     private void validarAcessoMatriz(Token token) throws SemanticError
     {
+        if(acessoAtual == null)
+        {
+            throw new SemanticError(
+                    "Acesso inválido de matriz",
+                    token.getPosition()
+            );
+        }
+
         if(!acessoAtual.matriz)
         {
             throw new SemanticError(
-                "'" + acessoAtual.id +
-                "' não é matriz",
-                token.getPosition()
+                    "'" + acessoAtual.id + "' não é matriz",
+                    token.getPosition()
             );
         }
 
         if(quantidadeIndices != 2)
         {
             throw new SemanticError(
-                "Matriz requer dois índices",
-                token.getPosition()
+                    "Matriz requer dois índices",
+                    token.getPosition()
             );
         }
 
+        acessoAtual.usada = true;
+        verificarInicializacao(acessoAtual, token);
         pilhaTipos.push(acessoAtual.tipo);
     }
 
-    // busca símbolo pelo id
     private Simbolo buscarNoEscopoAtual(String nome)
     {
         String escopoAtual = pilhaEscopos.peek();
 
         for(Simbolo s : tabelaSimbolos)
         {
-            if(
-                s.id.equals(nome) &&
-                s.escopo.equals(escopoAtual)
-            )
+            if(s.id.equals(nome) && s.escopo.equals(escopoAtual))
             {
                 return s;
             }
@@ -554,11 +602,14 @@ public class Semantico implements Constants
 
     private Simbolo buscarSimbolo(String nome)
     {
-        for(int i = pilhaEscopos.size()-1; i >= 0; i--) {
+        for(int i = pilhaEscopos.size() - 1; i >= 0; i--)
+        {
             String escopo = pilhaEscopos.get(i);
 
-            for(Simbolo s : tabelaSimbolos) {
-                if( s.id.equals(nome) && s.escopo.equals(escopo) ) {
+            for(Simbolo s : tabelaSimbolos)
+            {
+                if(s.id.equals(nome) && s.escopo.equals(escopo))
+                {
                     return s;
                 }
             }
@@ -572,75 +623,93 @@ public class Semantico implements Constants
         nivelEscopo++;
 
         pilhaEscopos.push(
-            "escopo_" + nivelEscopo
+                "escopo_" + nivelEscopo
         );
 
         System.out.println(
-            "Entrou no escopo: " +
-            pilhaEscopos.peek()
+                "Entrou no escopo: " +
+                        pilhaEscopos.peek()
         );
     }
 
     private void sairEscopo()
     {
-        String escopo = pilhaEscopos.pop();
+        if(pilhaEscopos.size() > 1)
+        {
+            String escopo = pilhaEscopos.pop();
 
-        System.out.println(
-            "Saiu do escopo: " + escopo
-        );
+            System.out.println(
+                    "Saiu do escopo: " + escopo
+            );
+        }
     }
 
-    private boolean tiposCompativeis( String destino, String origem )
+    private boolean tiposCompativeis(String destino, String origem)
     {
-        // tipos iguais
         if(destino.equals(origem))
             return true;
 
-        // promoção int -> float
-        if( destino.equals("float") && origem.equals("int") )
-        {
+        if(destino.equals("float") && origem.equals("int"))
             return true;
-        }
 
         return false;
     }
 
     private void validarAtribuicao(Token token) throws SemanticError
     {
+        if(lhsAtual == null)
+        {
+            throw new SemanticError(
+                    "Atribuição sem variável de destino",
+                    token.getPosition()
+            );
+        }
+
         if(pilhaTipos.isEmpty())
         {
             throw new SemanticError(
-                "Expressão sem tipo",
-                token.getPosition()
+                    "Expressão sem tipo",
+                    token.getPosition()
+            );
+        }
+
+        finalizarExpr(token);
+
+        if(pilhaTipos.isEmpty())
+        {
+            throw new SemanticError(
+                    "Expressão sem tipo",
+                    token.getPosition()
             );
         }
 
         String tipoExpr = pilhaTipos.pop();
-
-        // String tipoVar = simboloAtual.tipo;
         String tipoVar = lhsAtual.tipo;
 
         if(!tiposCompativeis(tipoVar, tipoExpr))
         {
             throw new SemanticError(
-                "Tipos incompatíveis: não é possível atribuir '" +
-                tipoExpr +
-                "' em '" +
-                tipoVar + "'",
-                token.getPosition()
+                    "Tipos incompatíveis: não é possível atribuir '" +
+                            tipoExpr +
+                            "' em '" +
+                            tipoVar + "'",
+                    token.getPosition()
             );
         }
 
         lhsAtual.ini = true;
+        lhsAtual.usada = true;
 
         System.out.println(
             "Atribuição válida: " +
-            tipoVar + " <- " + tipoExpr
+                    tipoVar + " <- " + tipoExpr
         );
     }
 
-    private int indice (String tipo) {
-        switch(tipo){
+    private int indice(String tipo)
+    {
+        switch(tipo)
+        {
             case "int":
                 return 0;
 
@@ -666,15 +735,28 @@ public class Semantico implements Constants
         int i = indice(t1);
         int j = indice(t2);
 
-        switch(op) {
-            // aritméticos
-            case "+": return soma[i][j];
-            case "-": return sub[i][j];
-            case "*": return mult[i][j];
-            case "/": return div[i][j];
-            case "%": return mod[i][j];
+        if(i < 0 || j < 0)
+        {
+            return ERRO;
+        }
 
-            // relacionais
+        switch(op)
+        {
+            case "+":
+                return soma[i][j];
+
+            case "-":
+                return sub[i][j];
+
+            case "*":
+                return mult[i][j];
+
+            case "/":
+                return div[i][j];
+
+            case "%":
+                return mod[i][j];
+
             case "==":
             case "!=":
             case "<":
@@ -683,7 +765,6 @@ public class Semantico implements Constants
             case ">=":
                 return rel[i][j];
 
-            // lógicos
             case "&&":
             case "||":
                 return logic[i][j];
@@ -693,19 +774,34 @@ public class Semantico implements Constants
         }
     }
 
-    private void reduzir(String op, Token token) throws SemanticError {
-        if(op.equals("!")) {
+    private void finalizarExpr(Token token) throws SemanticError
+    {
+        while(!pilhaOps.isEmpty())
+        {
+            String op = pilhaOps.pop();
+            reduzir(op, token);
+        }
+    }
 
-            if(pilhaTipos.isEmpty()) {
-                throw new SemanticError("Expressão inválida", token.getPosition());
+    private void reduzir(String op, Token token) throws SemanticError
+    {
+        if(op.equals("!"))
+        {
+            if(pilhaTipos.isEmpty())
+            {
+                throw new SemanticError(
+                        "Expressão inválida",
+                        token.getPosition()
+                );
             }
 
             String tipo = pilhaTipos.pop();
 
-            if(!tipo.equals("bool")) {
+            if(!tipo.equals("bool"))
+            {
                 throw new SemanticError(
-                    "Operador ! requer bool",
-                    token.getPosition()
+                        "Operador ! requer bool",
+                        token.getPosition()
                 );
             }
 
@@ -713,8 +809,12 @@ public class Semantico implements Constants
             return;
         }
 
-        if (pilhaTipos.size() < 2) {
-            throw new SemanticError("Expressão inválida", token.getPosition());
+        if(pilhaTipos.size() < 2)
+        {
+            throw new SemanticError(
+                    "Expressão inválida",
+                    token.getPosition()
+            );
         }
 
         String direita = pilhaTipos.pop();
@@ -722,56 +822,99 @@ public class Semantico implements Constants
 
         String resultado = resolverOperador(op, esquerda, direita);
 
-        if (resultado.equals(ERRO)) {
+        if(resultado.equals(ERRO))
+        {
             throw new SemanticError(
-                "Operação inválida: " + esquerda + " " + op + " " + direita,
-                token.getPosition()
+                    "Operação inválida: " +
+                            esquerda + " " + op + " " + direita,
+                    token.getPosition()
             );
         }
 
         pilhaTipos.push(resultado);
     }
 
-    private Simbolo inserirParametro(Token token) throws SemanticError
+    private void verificarInicializacao(Simbolo s, Token token)
     {
-        String nome = token.getLexeme();
-
-        if(buscarNoEscopoAtual(nome) != null)
+        if(
+                s != null &&
+                !s.ini &&
+                !s.func &&
+                !s.param
+        )
         {
-            throw new SemanticError(
-                "Parâmetro já declarado: " + nome,
-                token.getPosition()
+            adicionarAviso(
+                    "Aviso: identificador '" +
+                            s.id +
+                            "' usado sem inicialização."
+            );
+        }
+    }
+
+    private void adicionarAviso(String aviso)
+    {
+        if(!avisosEmitidos.contains(aviso))
+        {
+            avisosEmitidos.add(aviso);
+            avisos.add(aviso);
+        }
+    }
+
+    public void finalizarAnalise()
+    {
+        for(Simbolo s : tabelaSimbolos)
+        {
+            if(!s.usada && !s.func)
+            {
+                adicionarAviso(
+                        "Aviso: identificador '" +
+                                s.id +
+                                "' declarado e não usado."
+                );
+            }
+        }
+    }
+
+    private String modalidade(Simbolo s)
+    {
+        if(s.func)
+            return "Função";
+
+        if(s.param)
+            return "Parâmetro";
+
+        if(s.matriz)
+            return "Matriz";
+
+        if(s.vet)
+            return "Vetor";
+
+        return "Variável";
+    }
+
+    public List<String[]> getTabelaParaIDE()
+    {
+        List<String[]> linhas = new ArrayList<>();
+
+        for(Simbolo s : tabelaSimbolos)
+        {
+            linhas.add(
+                    new String[]{
+                            s.id,
+                            s.tipo,
+                            s.escopo,
+                            modalidade(s),
+                            s.ini ? "Sim" : "Não",
+                            s.usada ? "Sim" : "Não"
+                    }
             );
         }
 
-        Simbolo s = new Simbolo(
-            nome,
-            tipoAtual,
-            true,   // INICIALIZADO
-            false,
-            pilhaEscopos.peek(),
-            true,   // É parâmetro
-            0,
-            false,
-            false,
-            false,
-            false
-        );
-
-        tabelaSimbolos.add(s);
-
-        return s;
+        return linhas;
     }
 
-    // =========================
-    // RETORNA A TABELA
-    // =========================
-    public List<Simbolo> getTabelaSimbolos()
+    public List<String> getAvisos()
     {
-        return tabelaSimbolos;
-    }
-
-    public Semantico() {
-        pilhaEscopos.push("global");
+        return avisos;
     }
 }
