@@ -5,6 +5,8 @@ import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 public class GalsParserBridge {
 
@@ -13,7 +15,7 @@ public class GalsParserBridge {
     private final Class<?> sintaticoClass;
     private final Class<?> semanticoClass;
 
-    private Map<String, String> tabelaSimbolos;
+    private List<Object> tabelaSimbolos;
 
     public GalsParserBridge() throws Exception {
         Path parserDir = Path.of("parser-bin");
@@ -85,24 +87,16 @@ public class GalsParserBridge {
         }
     }
 
-    private Map<String, String> carregarTabelaSimbolos(Object semantico) throws Exception {
-        Method metodoTabela = semanticoClass.getMethod("getTabelaSimbolos");
-        Object retorno = metodoTabela.invoke(semantico);
+    private List<Object> carregarTabelaSimbolos(Object semantico) throws Exception {
 
-        Map<String, String> tabelaConvertida = new LinkedHashMap<>();
+        Method metodo = semanticoClass.getMethod("getTabelaSimbolos");
+        Object retorno = metodo.invoke(semantico);
 
-        if (retorno instanceof Map<?, ?> tabela) {
-            for (Map.Entry<?, ?> entry : tabela.entrySet()) {
-                if (entry.getKey() instanceof String && entry.getValue() instanceof String) {
-                    tabelaConvertida.put(
-                            (String) entry.getKey(),
-                            (String) entry.getValue()
-                    );
-                }
-            }
+        if (retorno instanceof List<?> lista) {
+            return (List<Object>) lista;
         }
 
-        return tabelaConvertida;
+        return new ArrayList<>();
     }
 
     private Object criarLexico(String codigo) throws Exception {
@@ -147,7 +141,7 @@ public class GalsParserBridge {
         return "\"" + trecho + "\"";
     }
 
-    public Map<String, String> getTabelaSimbolos()
+    public List<Object> getTabelaSimbolos()
     {
         return tabelaSimbolos;
     }

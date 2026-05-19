@@ -4,6 +4,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.Map;
+import java.util.List;
 
 public class CompilerIDE extends JFrame {
 
@@ -111,8 +112,15 @@ public class CompilerIDE extends JFrame {
         // TABELA DE SÍMBOLOS
         // =========================
         String[] colunas = {
-                "Identificador",
-                "Tipo"
+        "Id",
+        "Tipo",
+        "Escopo",
+        "Ini",
+        "Usada",
+        "Param",
+        "Vet",
+        "Matriz",
+        "Func"
         };
 
         modeloTabela = new DefaultTableModel(colunas, 0);
@@ -254,19 +262,31 @@ public class CompilerIDE extends JFrame {
             // =========================
             // PREENCHE TABELA
             // =========================
-            Map<String, String> tabela =
-                    parser.getTabelaSimbolos();
+                List<Object> tabela = parser.getTabelaSimbolos();
 
-            if (tabela != null) {
-                for (Map.Entry<String, String> entry : tabela.entrySet()) {
-                    modeloTabela.addRow(
-                            new Object[]{
-                                    entry.getKey(),
-                                    entry.getValue()
-                            }
-                    );
+                if (tabela != null) {
+                        for (Object obj : tabela) {
+
+                                Class<?> c = obj.getClass();
+
+                                String id = (String) c.getField("id").get(obj);
+                                String tipo = (String) c.getField("tipo").get(obj);
+                                String escopo = (String) c.getField("escopo").get(obj);
+
+                                boolean ini = c.getField("ini").getBoolean(obj);
+                                boolean usada = c.getField("usada").getBoolean(obj);
+                                boolean param = c.getField("param").getBoolean(obj);
+                                boolean vet = c.getField("vet").getBoolean(obj);
+                                boolean matriz = c.getField("matriz").getBoolean(obj);
+                                boolean func = c.getField("func").getBoolean(obj);
+
+                                modeloTabela.addRow(new Object[]{
+                                        id, tipo, escopo,
+                                        ini, usada, param,
+                                        vet, matriz, func
+                                });
+                        }
                 }
-            }
 
         } catch (Exception ex) {
 
