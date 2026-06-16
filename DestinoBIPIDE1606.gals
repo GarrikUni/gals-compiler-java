@@ -1,0 +1,260 @@
+#Options
+GenerateScanner = true
+GenerateParser = true
+Language = Java
+ScannerName = Lexico
+ParserName = Sintatico
+SemanticName = Semantico
+ScannerCaseSensitive = true
+ScannerTable = Compact
+Input = String
+Parser = SLR
+#RegularDefinitions
+
+#Tokens
+:[\n\s\t\r]+
+
+INT: "int"|"integer"
+VETOR_ID: "vet."[a-zA-Z][a-zA-Z0-9_]*
+ID: [a-zA-Z][a-zA-Z0-9_]*
+
+inicio = ID : "inicio"
+declare = ID : "declare"
+declarado = ID : "declarado"
+fim = ID : "fim"
+repeat = ID : "repeat"
+
+VOID = ID : "void"
+FLOAT = ID : "float"
+CHAR = ID : "char"
+STRING = ID : "string"
+BOOL = ID : "bool"
+TRUE = ID : "true"
+FALSE = ID : "false"
+
+IF = ID : "if"
+THEN = ID : "then"
+ELSE = ID : "else"
+
+END = ID : "end"
+
+FOR = ID : "for"
+DO = ID : "do"
+WHILE = ID : "while"
+BREAK = ID : "break"
+CONTINUE = ID : "continue"
+
+FUNCTION = ID : "function"
+RETURN = ID : "return"
+
+CIN = ID : "cin"
+COUT = ID : "cout"
+
+REAL: [0-9]+"."[0-9]+
+HEXNUM: "0x"[0-9a-fA-F]+|"0X"[0-9a-fA-F]+
+BINNUM: "0b"[0-1]+|"0B"[0-1]+
+NUM: [0-9]+
+
+STRINGval: [\"] [^\"]* [\"] 
+CHARval: ['] [^']? [']|"'\''" //só aceita ' como char se for escapado \'
+
+//LINE_C: [/][/][^ \n]*
+//BLOCK_C: "/*" ( [^\*]|[\*][^/] )* [\*]? "*/"
+:! [/][/][^ \n]*
+:! "/*" ( [^\*]|[\*][^/] )* [\*]? "*/"
+
+">>"
+"<<"
+">="
+"<="
+"=="
+"!="
+"&&"
+"||"
+"++"
+"--"
+"+"
+"-"
+"*"
+"/"
+"%"
+">"
+"<"
+"!"
+"&"
+"|"
+"~"
+"^"
+"="
+"."
+";"
+":"
+","
+"("
+")"
+"{"
+"}"
+"["
+"]"
+#NonTerminals
+<prog>
+<block>
+<l_cmd>
+<l_cmd_rest>
+<cmd>
+<non_decl_cmd>
+<l_func>
+<l_func_rest>
+<func_start>
+<func>
+<params_opt>
+<params>
+<params_rest>
+<param>
+<ret>
+<ret_opt>
+<lvalue>
+<suffix_array>
+<typed_id>
+<typed_id_tail>
+<var_type>
+<func_type>
+<value_type>
+<type>
+<l_decl_opt>
+<l_decl>
+<l_decl_rest>
+<decl>
+<decl_item>
+<decl_more>
+<init_opt>
+<attr>
+<attr_nosemi>
+<expr>
+<logic_or>
+<logic_or_rest>
+<logic_and>
+<logic_and_rest>
+<rel>
+<rel_tail>
+<rel_op>
+<arith>
+<arith_rest>
+<term>
+<term_rest>
+<factor>
+<prefix>
+<postfix>
+<postfix_tail>
+<call>
+<args_opt>
+<args>
+<args_rest>
+<cond>
+<rep>
+<for_init>
+<for_decl>
+<for_cond>
+<for_update>
+<brk>
+<cont>
+<read>
+<read_list>
+<read_item>
+<write>
+<write_list>
+<write_item>
+#Grammar
+<prog> ::= inicio declare <l_decl> declarado <l_func> fim | inicio <l_func> fim; // î representa epsilon em gals
+<block> ::= "{" #4 <l_cmd> "}" #5; // inmpedir que o <block> seja criado em <cmd> para não criar block sem função, if, loop, etc...
+
+<l_cmd> ::= <cmd> <l_cmd_rest>;
+<l_cmd_rest> ::= <cmd> <l_cmd_rest> | î;
+
+<cmd> ::= <decl> | <non_decl_cmd>;
+
+<non_decl_cmd> ::= <attr> | <cond> | <rep> | <block> | <ret> | <brk> | <cont> | ";";
+
+<l_func> ::= <func> <l_func_rest>;
+<l_func_rest> ::= <func> <l_func_rest> | î;
+<func_start> ::= <func_type> ID #51 #50;
+<func> ::= <func_start> "(" <params_opt> ")" <block> #5;
+
+<params_opt> ::= <params> | î;
+<params> ::= <param> <params_rest>;
+<params_rest> ::= "," <param> <params_rest> | î;
+<param> ::= <type> ID #40;
+
+<ret> ::= RETURN <ret_opt> ";";
+<ret_opt> ::= <expr> | î;
+
+<lvalue> ::= ID #3 | VETOR_ID #60 "[" <expr> #71 <suffix_array> #72 "]";
+<suffix_array> ::= "[" <expr> "]" <suffix_array> | î;
+
+<typed_id> ::= <type> ID #2 <typed_id_tail>;
+<typed_id_tail> ::= "=" <expr> | î;
+<var_type> ::= INT #1 | FLOAT #1 | CHAR #1 | STRING #1 | BOOL #1;
+<func_type> ::= VOID #1 | INT #1 | FLOAT #1 | CHAR #1 | STRING #1 | BOOL#1;
+<value_type> ::= INT #1 | FLOAT #1 | CHAR #1 | STRING #1 | BOOL #1;
+<type> ::= VOID #1 | <value_type>;
+
+
+<l_decl_opt> ::= <l_decl> | î;
+<l_decl> ::= <decl> <l_decl_rest>;
+<l_decl_rest> ::= <decl> <l_decl_rest> | î;
+
+<decl> ::= <var_type> <decl_item> <decl_more> ";";
+<decl_item> ::= ID #2 <init_opt> | VETOR_ID #2 "[" <expr> "]";
+<decl_more> ::= "," <decl_item> <decl_more> | î;
+
+
+<init_opt> ::= "=" #31 <expr> #30 #6 | î;
+
+<attr> ::= <attr_nosemi> ";" ;
+<attr_nosemi> ::= <lvalue> #32 "=" #31 <expr> #30 #6 | <lvalue> "++" | <lvalue> "--" | "++" ID #3 | "--" ID #3;
+
+<expr> ::= <logic_or>;
+
+<logic_or> ::= <logic_and> <logic_or_rest>;
+<logic_or_rest> ::= "||" <logic_and> <logic_or_rest> | î;
+
+<logic_and> ::= <rel> <logic_and_rest>;
+<logic_and_rest> ::= "&&" <rel> <logic_and_rest> | î;
+
+<rel> ::= <arith> <rel_tail>;
+
+<rel_tail> ::= <rel_op> <arith> #30 | î;
+<rel_op> ::= "==" #14 | "!=" #15 | "<" #16 | ">" #17 | "<=" #18 | ">=" #19;
+
+<arith> ::= <term> <arith_rest>;
+<arith_rest> ::= "+" #20 <term> <arith_rest> | "-" #21 <term> <arith_rest> | î;
+
+<term> ::= <factor> <term_rest>;
+<term_rest> ::= "*" #22 <factor> <term_rest> | "/" #23 <factor> <term_rest> | "%" #24 <factor> <term_rest> | î;
+
+<factor> ::= <prefix> #12 | "(" <expr> ")" | <call> | NUM #7 | REAL #8 | STRINGval #9 | CHARval #10 | TRUE #11 | FALSE #11;
+<prefix> ::= "++" <lvalue> | "--" <lvalue> | <postfix>;
+<postfix> ::= <lvalue> <postfix_tail>;
+<postfix_tail> ::= "++" | "--" | î;
+
+<call> ::= ID #52 "(" <args_opt> ")";
+<args_opt> ::= <args> | î;
+<args> ::= <expr> <args_rest>;
+<args_rest> ::= "," <expr> <args_rest> | î;
+
+<cond> ::= IF "(" <expr> ")" THEN <block> ELSE <block> | IF "(" <expr> ")" THEN <block>;
+<rep> ::= WHILE "(" <expr> ")" <cmd> | FOR "(" <for_init> ";" <for_cond> ";" <for_update> ")" <cmd> | DO <cmd> WHILE "(" <expr> ")" ";";
+<for_init> ::= <for_decl> | <attr_nosemi>;
+<for_decl> ::= <typed_id> ;
+<for_cond> ::= <expr> ;
+<for_update> ::= <attr_nosemi> ;
+
+<brk> ::= BREAK ";";
+<cont> ::= CONTINUE ";";
+
+<read> ::= CIN "(" <read_list> #80 ")" ";";
+<read_list> ::= <read_item> | <read_list> "," <read_item>;
+<read_item> ::= <lvalue>;
+<write> ::= COUT "(" <write_list> ")" ";";
+<write_list> ::= <write_item> | <write_list> "," <write_item>;
+<write_item> ::= <expr> #81;
